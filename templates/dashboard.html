@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}My MOU{% endblock %}
+{% block content %}
+{% set submitted = sub and sub.status == 'submitted' %}
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+    <div>
+        <h1>{{ current_user.region }} — Memorandum of Understanding</h1>
+        <p class="lead" style="margin-bottom:.4rem;">
+            {% if submitted %}
+                Submitted on {{ sub.submitted_at[:10] }}. Your submission is now locked.
+            {% else %}
+                Complete the details, download your MOU to sign, upload the signed copy, then submit.
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        {% if submitted %}<span class="badge ok">Submitted</span>
+        {% else %}<span class="badge draft">Not yet submitted</span>{% endif %}
+    </div>
+</div>
+
+{% if submitted %}
+<div class="card">
+    <h2>Your submission</h2>
+    <div class="table-wrap">
+    <table class="tbl">
+        <tr><th style="width:30%;">Purpose</th><td>{{ sub.purpose or '—' }}</td></tr>
+        <tr><th>Duration</th><td>{{ sub.commencement_date or '—' }} to {{ sub.expiry_date or '—' }}</td></tr>
+        <tr><th>Signatory</th><td>{{ sub.signatory_name or '—' }}{% if sub.signatory_position %} · {{ sub.signatory_position }}{% endif %}</td></tr>
+        {% if sub.remarks %}<tr><th>Remarks</th><td>{{ sub.remarks }}</td></tr>{% endif %}
+    </table>
+    </div>
+    <div class="actions" style="margin-top:1rem;">
+        <a class="btn ghost" href="{{ url_for('submission_generate') }}">⬇ Download completed MOU</a>
+    </div>
+    <h2 style="margin-top:1.2rem;">Uploaded documents</h2>
+    <ul class="doclist">
+        {% for d in docs %}
+            <li>
+                <span class="nm">{{ '📄' if d.kind == 'signed_mou' else '📎' }} {{ d.original_name }}</span>
+                <span class="meta">{{ 'Signed MOU' if d.kind == 'signed_mou' else 'Supporting' }}</span>
+                <a class="btn sm ghost" href="{{ url_for('download_document', doc_id=d.id) }}">Download</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <p class="hint" style="margin-top:.9rem;">
+        Need to change something after submitting? Contact the Legal Unit to have it reopened.
+    </p>
+</div>
+{% else %}
+
+<ol class="steps" style="margin:.2rem 0 1.2rem;">
+    <li class="{{ 'done' if details_ready }}">Complete the MOU details</li>
+    <li class="{{ 'done' if details_ready }}">Download your MOU &amp; sign it</li>
+    <li class="{{ 'done' if has_signed }}">Upload the signed MOU (PDF)</li>
+    <li>Submit</li>
+</ol>
+
+<!-- Step 1 — details -->
+<div class="card">
+    <h2>1 · MOU details</h2>
+    <p class="hint" style="margin-top:0;">Fill in every field here — these are merged into your MOU. You will only sign it by hand.</p>
+    <form method="post" action="{{ url_for('submission_save') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field">
+            <label for="purpose">Purpose of the MOU</label>
+            <textarea id="purpose" name="purpose" required
+                      placeholder="State what this MOU between the Legal Unit and {{ current_user.region }} is for.">{{ sub.purpose if sub else '' }}</textarea>
+        </div>
+        <div class="grid2">
+            <div class="field">
+                <label for="commencement_date">Commencement date</label>
+                <input class="input" id="commencement_date" type="date" name="commencement_date"
+                       value="{{ sub.commencement_date if sub else '' }}">
+            </div>
+            <div class="field">
+                <label for="expiry_date">Expiry date</label>
+                <input class="input" id="expiry_date" type="date" name="expiry_date"
+                       value="{{ sub.expiry_date if sub else '' }}">
+            </div>
+        </div>
+        <div class="grid2">
+            <div class="field">
+                <label for="signatory_name">Name of signatory (for the Region)</label>
+                <input class="input" id="signatory_name" name="signatory_name" required
+                       value="{{ sub.signatory_name if sub else '' }}" placeholder="Person who will sign for the region">
+            </div>
+            <div class="field">
+                <label for="signatory_position">Signatory's position</label>
+                <input class="input" id="signatory_position" name="signatory_position" required
+                       value="{{ sub.signatory_position if sub else '' }}" placeholder="e.g. Regional Director of Health Services">
+            </div>
+        </div>
+        <div class="field">
+            <label for="remarks">Remarks <span class="muted">(optional — not printed on the MOU)</span></label>
+            <textarea id="remarks" name="remarks">{{ sub.remarks if sub else '' }}</textarea>
+        </div>
+        <div class="field">
+            <label class="checkline">
+                <input type="checkbox" name="agreed" value="1" {{ 'checked' if sub and sub.agreed }}>
+                <span>I confirm that the details above are correct and that the signed hardcopy I upload
+                      will be a true copy of this MOU.</span>
+            </label>
+        </div>
+        <button class="btn" type="submit">Save details</button>
+    </form>
+</div>
+
+<!-- Step 2 — generate & sign -->
+<div class="card">
+    <h2>2 · Download your MOU &amp; sign it</h2>
+    {% if details_ready %}
+        <p class="hint">Your MOU is ready with all details filled in. Download it, print and sign it, then scan the signed copy to PDF for step 3.</p>
+        <a class="btn gold" href="{{ url_for('submission_generate') }}">⬇ Download completed MOU (PDF)</a>
+    {% else %}
+        <p class="hint">Complete and save the MOU details in step 1 first — then your MOU can be generated here.</p>
+        <button class="btn gold" disabled>⬇ Download completed MOU (PDF)</button>
+    {% endif %}
+</div>
+
+<!-- Step 3 — uploads -->
+<div class="card">
+    <h2>3 · Upload the signed MOU</h2>
+
+    <form method="post" action="{{ url_for('submission_upload') }}" enctype="multipart/form-data"
+          style="border-bottom:1px solid var(--line); padding-bottom:1rem; margin-bottom:1rem;">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="kind" value="signed_mou">
+        <label>Signed MOU <span class="muted">(PDF, required)</span></label>
+        <div class="actions" style="margin-top:.4rem;">
+            <input type="file" name="file" accept="application/pdf" required>
+            <button class="btn sm" type="submit">Upload signed MOU</button>
+        </div>
+        {% if has_signed %}<p class="hint" style="margin:.5rem 0 0;">✓ A signed MOU is uploaded. Uploading again replaces it.</p>{% endif %}
+    </form>
+
+    <form method="post" action="{{ url_for('submission_upload') }}" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <input type="hidden" name="kind" value="supporting">
+        <label>Supporting documents <span class="muted">(optional — PDF or image, add as many as needed)</span></label>
+        <div class="actions" style="margin-top:.4rem;">
+            <input type="file" name="file" accept="application/pdf,image/jpeg,image/png">
+            <button class="btn sm ghost" type="submit">Add supporting file</button>
+        </div>
+    </form>
+
+    {% if docs %}
+    <ul class="doclist" style="margin-top:1rem;">
+        {% for d in docs %}
+            <li>
+                <span class="nm">{{ '📄' if d.kind == 'signed_mou' else '📎' }} {{ d.original_name }}</span>
+                <span class="meta">{{ 'Signed MOU' if d.kind == 'signed_mou' else 'Supporting' }} · {{ (d.size_bytes / 1024) | round | int }} KB</span>
+                <a class="btn sm ghost" href="{{ url_for('download_document', doc_id=d.id) }}">View</a>
+                <form method="post" action="{{ url_for('submission_doc_delete', doc_id=d.id) }}" style="display:inline;"
+                      onsubmit="return confirm('Remove this file?');">
+                    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                    <button class="btn sm danger" type="submit">Remove</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<!-- Step 4 — submit -->
+<div class="card">
+    <h2>4 · Submit</h2>
+    <p class="hint">
+        You can submit once the details are saved, the signed MOU is uploaded, and the confirmation box is ticked.
+        After submitting, your entry is locked.
+    </p>
+    <form method="post" action="{{ url_for('submission_submit') }}"
+          onsubmit="return confirm('Submit your region\'s MOU? You will not be able to change it afterwards.');">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn gold" type="submit" {{ 'disabled' if not (details_ready and has_signed and sub and sub.agreed) }}>
+            Submit MOU
+        </button>
+        {% if not details_ready %}<span class="muted" style="margin-left:.6rem;">Complete the details first.</span>
+        {% elif not has_signed %}<span class="muted" style="margin-left:.6rem;">Upload the signed MOU first.</span>
+        {% elif not (sub and sub.agreed) %}<span class="muted" style="margin-left:.6rem;">Tick the confirmation box in step 1.</span>{% endif %}
+    </form>
+</div>
+{% endif %}
+{% endblock %}

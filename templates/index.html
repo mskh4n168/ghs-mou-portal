@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Regional Memorandum of Understanding</h1>
+    <p class="lead">
+        Each region submits its signed Memorandum of Understanding (MOU) through this portal.
+        A regional representative registers, fills in the MOU details on the site, downloads the
+        completed MOU to sign, then uploads the signed hardcopy to the Legal Unit.
+    </p>
+
+    <ol class="steps" style="margin-bottom:1.1rem;">
+        <li>Register with your details to create an account.</li>
+        <li>Log in and complete the MOU details on the site.</li>
+        <li>Download your completed MOU, sign it, then upload the signed copy (PDF).</li>
+        <li>Submit — the Legal Unit is notified of your region's submission.</li>
+    </ol>
+
+    <div class="actions">
+        <a class="btn gold" href="{{ url_for('register') }}">Register your region</a>
+        <a class="btn ghost" href="{{ url_for('login') }}">I already have an account</a>
+    </div>
+</div>
+{% endblock %}

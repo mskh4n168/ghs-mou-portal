@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ sub.region }} — MOU{% endblock %}
+{% block content %}
+<div style="margin-bottom:1rem;"><a class="muted" href="{{ url_for('admin') }}">← Back to all submissions</a></div>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+    <h1 style="margin-bottom:.2rem;">{{ sub.region }}</h1>
+    {% if sub.status == 'submitted' %}<span class="badge ok">Submitted</span>{% else %}<span class="badge draft">Draft</span>{% endif %}
+</div>
+
+<div class="card">
+    <h2>MOU details</h2>
+    <div class="table-wrap">
+    <table class="tbl">
+        <tr><th style="width:30%;">Representative</th><td>{{ sub.full_name }}</td></tr>
+        <tr><th>Email</th><td>{{ sub.email }}</td></tr>
+        <tr><th>Phone</th><td>{{ sub.phone or '—' }}</td></tr>
+        <tr><th>Position</th><td>{{ sub.position or '—' }}</td></tr>
+        <tr><th>Purpose</th><td>{{ sub.purpose or '—' }}</td></tr>
+        <tr><th>Duration</th><td>{{ sub.commencement_date or '—' }} to {{ sub.expiry_date or '—' }}</td></tr>
+        <tr><th>Signatory</th><td>{{ sub.signatory_name or '—' }}{% if sub.signatory_position %} · {{ sub.signatory_position }}{% endif %}</td></tr>
+        <tr><th>Submitted</th><td>{{ sub.submitted_at[:19].replace('T',' ') if sub.submitted_at else '—' }}</td></tr>
+        {% if sub.remarks %}<tr><th>Remarks</th><td>{{ sub.remarks }}</td></tr>{% endif %}
+    </table>
+    </div>
+    <div class="actions" style="margin-top:1rem;">
+        <a class="btn ghost" href="{{ url_for('admin_submission_pdf', sub_id=sub.id) }}">⬇ Download completed MOU (unsigned)</a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Documents</h2>
+    {% if docs %}
+    <ul class="doclist">
+        {% for d in docs %}
+            <li>
+                <span class="nm">{{ '📄' if d.kind == 'signed_mou' else '📎' }} {{ d.original_name }}</span>
+                <span class="meta">{{ 'Signed MOU' if d.kind == 'signed_mou' else 'Supporting' }} · {{ (d.size_bytes / 1024) | round | int }} KB</span>
+                <a class="btn sm ghost" href="{{ url_for('download_document', doc_id=d.id) }}">Download</a>
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p class="muted">No documents uploaded.</p>
+    {% endif %}
+</div>
+{% endblock %}

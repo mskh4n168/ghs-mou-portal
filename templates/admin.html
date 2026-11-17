@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+{% set submitted_rows = rows | selectattr('status', 'equalto', 'submitted') | list %}
+
+<h1>MOU Submissions</h1>
+<p class="lead">Submissions received from the regions.</p>
+
+<div class="statline">
+    <div class="s"><b>{{ submitted_regions | length }}</b><span>of {{ regions | length }} regions submitted</span></div>
+    <div class="s"><b>{{ submitted_rows | length }}</b><span>submitted</span></div>
+    <div class="s"><b>{{ reps | length }}</b><span>registered reps</span></div>
+</div>
+
+<div class="actions" style="margin-bottom:1.1rem;">
+    <a class="btn ghost" href="{{ url_for('admin_export_csv') }}">⬇ Export CSV</a>
+    <a class="btn gold" href="{{ url_for('admin_download_all') }}">⬇ Download all documents (ZIP)</a>
+</div>
+
+<div class="card">
+    <h2>Submissions</h2>
+    {% if rows %}
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr><th>Region</th><th>Representative</th><th>Signatory</th><th>Status</th><th>Docs</th><th>Submitted</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                <td><strong>{{ r.region }}</strong></td>
+                <td>{{ r.full_name }}<br><span class="muted" style="font-size:.82rem;">{{ r.email }}{% if r.phone %} · {{ r.phone }}{% endif %}</span></td>
+                <td>{{ r.signatory_name or '—' }}{% if r.signatory_position %}<br><span class="muted" style="font-size:.82rem;">{{ r.signatory_position }}</span>{% endif %}</td>
+                <td>{% if r.status == 'submitted' %}<span class="badge ok">Submitted</span>{% else %}<span class="badge draft">Draft</span>{% endif %}</td>
+                <td>{{ r.doc_count }}</td>
+                <td>{{ r.submitted_at[:10] if r.submitted_at else '—' }}</td>
+                <td class="right"><a class="btn sm ghost" href="{{ url_for('admin_submission', sub_id=r.id) }}">Open</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+        <p class="muted">No submissions yet.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Region coverage</h2>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Region</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for region in regions %}
+            <tr>
+                <td>{{ region }}</td>
+                <td>
+                    {% if region in submitted_regions %}<span class="badge ok">Submitted</span>
+                    {% else %}<span class="badge none">Awaiting</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

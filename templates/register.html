@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+{% block content %}
+<div class="card">
+    <h1>Register</h1>
+    <p class="lead">Create your account as your region's representative.</p>
+    <form method="post" action="{{ url_for('register') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <div class="field">
+            <label for="full_name">Full name</label>
+            <input class="input" id="full_name" name="full_name" value="{{ form.full_name or '' }}" required>
+        </div>
+        <div class="field">
+            <label for="region">Region</label>
+            <select id="region" name="region" required>
+                <option value="">— select your region —</option>
+                {% for r in regions %}
+                    <option value="{{ r }}" {{ 'selected' if form.region == r }}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="position">Position / title</label>
+            <input class="input" id="position" name="position" value="{{ form.position or '' }}"
+                   placeholder="e.g. Regional HR Manager">
+        </div>
+        <div class="grid2">
+            <div class="field">
+                <label for="email">Email</label>
+                <input class="input" id="email" type="email" name="email" value="{{ form.email or '' }}" required>
+            </div>
+            <div class="field">
+                <label for="phone">Phone</label>
+                <input class="input" id="phone" name="phone" value="{{ form.phone or '' }}">
+            </div>
+        </div>
+        <div class="grid2">
+            <div class="field">
+                <label for="password">Password</label>
+                <input class="input" id="password" type="password" name="password" required minlength="8">
+            </div>
+            <div class="field">
+                <label for="confirm">Confirm password</label>
+                <input class="input" id="confirm" type="password" name="confirm" required minlength="8">
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn" type="submit">Create account</button>
+            <a class="muted" href="{{ url_for('login') }}">Already registered? Log in</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
