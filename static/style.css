@@ -144,3 +144,38 @@ table.tbl tr:hover td { background: #fafbfe; }
 .muted { color: var(--muted); }
 .right { text-align: right; }
 .footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 1.5rem 1rem; }
+
+/* ---- app shell with left sidebar (admin) ---- */
+.appshell {
+    display: flex; gap: 1.3rem; align-items: flex-start;
+    max-width: 1140px; margin: 0 auto; padding: 1.4rem 1rem 3rem;
+}
+.sidebar {
+    flex: 0 0 214px; position: sticky; top: 1.4rem;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: .7rem;
+}
+.appmain { flex: 1 1 auto; min-width: 0; }   /* min-width:0 lets tables scroll inside */
+.sidebar nav { display: flex; flex-direction: column; gap: .15rem; }
+.navgroup { display: flex; flex-direction: column; gap: .15rem; }
+.navgroup + .navgroup { margin-top: .6rem; padding-top: .6rem; border-top: 1px solid var(--line); }
+.navlabel {
+    font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--muted); font-weight: 700; padding: .3rem .5rem .1rem;
+}
+.navitem {
+    display: flex; align-items: center; gap: .55rem; padding: .5rem .6rem;
+    border-radius: 8px; color: var(--ink); text-decoration: none;
+    font-weight: 600; font-size: .92rem;
+}
+.navitem:hover { background: #f0f4fa; }
+.navitem.active { background: var(--navy); color: #fff; }
+.navitem .ic { width: 1.15rem; text-align: center; opacity: .9; font-size: .95rem; }
+@media (max-width: 760px) {
+    .appshell { flex-direction: column; gap: 1rem; }
+    .sidebar { position: static; width: 100%; flex-basis: auto; }
+    .sidebar nav { flex-direction: row; flex-wrap: wrap; }
+    .navgroup { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .navgroup + .navgroup { margin-top: .3rem; padding-top: .3rem; }
+    .navlabel { width: 100%; }
+}

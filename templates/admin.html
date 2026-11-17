@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}Admin dashboard{% endblock %}
+{% extends "admin_base.html" %}
+{% block title %}Submissions{% endblock %}
 {% block content %}
 {% set submitted_rows = rows | selectattr('status', 'equalto', 'submitted') | list %}
 
@@ -10,11 +10,6 @@
     <div class="s"><b>{{ submitted_regions | length }}</b><span>of {{ regions | length }} regions submitted</span></div>
     <div class="s"><b>{{ submitted_rows | length }}</b><span>submitted</span></div>
     <div class="s"><b>{{ reps | length }}</b><span>registered reps</span></div>
-</div>
-
-<div class="actions" style="margin-bottom:1.1rem;">
-    <a class="btn ghost" href="{{ url_for('admin_export_csv') }}">⬇ Export CSV</a>
-    <a class="btn gold" href="{{ url_for('admin_download_all') }}">⬇ Download all documents (ZIP)</a>
 </div>
 
 <div class="card">

@@ -37,14 +37,12 @@
     </div>
 </header>
 
+{% block main %}
 <main class="wrap {% block wrapclass %}{% endblock %}">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, msg in messages %}
-            <div class="flash {{ category }}">{{ msg }}</div>
-        {% endfor %}
-    {% endwith %}
+    {% include "_flashes.html" %}
     {% block content %}{% endblock %}
 </main>
+{% endblock %}
 
 <footer class="footer">
     Ghana Health Service · Legal Unit · MOU · {{ current_year }}

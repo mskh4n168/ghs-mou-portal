@@ -469,7 +469,7 @@ def create_app():
         ).fetchall()
         return render_template(
             "admin.html", rows=rows, reps=reps, regions=REGIONS,
-            submitted_regions=submitted_regions,
+            submitted_regions=submitted_regions, active="submissions",
         )
 
     @app.route("/admin/submission/<int:sub_id>")
@@ -483,7 +483,8 @@ def create_app():
         ).fetchone()
         if not sub:
             abort(404)
-        return render_template("admin_detail.html", sub=sub, docs=docs_for(sub_id))
+        return render_template("admin_detail.html", sub=sub, docs=docs_for(sub_id),
+                               active="submissions")
 
     @app.route("/admin/export.csv")
     @admin_required

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block main %}
+<div class="appshell">
+    <aside class="sidebar">
+        <nav>
+            <div class="navgroup">
+                <div class="navlabel">Menu</div>
+                <a class="navitem {{ 'active' if active == 'submissions' }}" href="{{ url_for('admin') }}">
+                    <span class="ic">▤</span> Submissions
+                </a>
+            </div>
+            <div class="navgroup">
+                <div class="navlabel">Export</div>
+                <a class="navitem" href="{{ url_for('admin_export_csv') }}"><span class="ic">⬇</span> Export CSV</a>
+                <a class="navitem" href="{{ url_for('admin_download_all') }}"><span class="ic">⬇</span> All documents (ZIP)</a>
+            </div>
+        </nav>
+    </aside>
+    <section class="appmain">
+        {% include "_flashes.html" %}
+        {% block content %}{% endblock %}
+    </section>
+</div>
+{% endblock %}
